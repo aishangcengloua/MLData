@@ -10,6 +10,7 @@ from torchvision.utils import save_image
 from torch.utils.tensorboard import SummaryWriter
 from torchvision.utils import make_grid
 
+#设置超参数
 MAX_EPOCH = 50
 LR_RATE = 0.0001
 BATCH_SIZE = 100
@@ -26,6 +27,7 @@ Dataset = datasets.MNIST(root = 'data',
 
 Dataloader = DataLoader(Dataset, batch_size = BATCH_SIZE, shuffle = True, drop_last = True)
 
+#生成器
 class Generator(nn.Module) :
     def __init__(self):
         super(Generator, self).__init__()
@@ -45,6 +47,7 @@ class Generator(nn.Module) :
         out = self.G(x)
         return out.view(z.size(0), 28, 28)
 
+#判别器
 class Discriminator(nn.Module) :
     def __init__(self) :
         super(Discriminator, self).__init__()
@@ -79,6 +82,7 @@ d_optimizer = optim.Adam(D.parameters(), lr = LR_RATE)
 g_optimizer = optim.Adam(G.parameters(), lr = LR_RATE)
 criterion = nn.BCELoss()
 
+#训练
 for epoch in range(MAX_EPOCH) :
     for i, (images, labels) in enumerate(Dataloader) :
         step = epoch * len(Dataloader) + i + 1
@@ -119,12 +123,12 @@ for epoch in range(MAX_EPOCH) :
                   .format(epoch, MAX_EPOCH, i + 1, len(Dataloader), d_loss.item(), g_loss.item(),
                           real_score.mean().item(), fake_score.mean().item()))
 
-            # 保存真图片
+        # 保存真图片
         if (epoch + 1) == 1:
             images = images.reshape(images.size(0), 1, 28, 28)
             save_image(denorm(images), os.path.join(sample_dir, 'real_images.png'))
 
-            # 保存假图片
+        # 保存假图片
         fake_images = fake_images.reshape(fake_images.size(0), 1, 28, 28)
         save_image(denorm(fake_images), os.path.join(sample_dir, 'fake_images-{}.png'.format(epoch + 1)))
 
@@ -133,6 +137,8 @@ for epoch in range(MAX_EPOCH) :
     # 保存模型
     torch.save(G.state_dict(), 'G.ckpt')
     torch.save(D.state_dict(), 'D.ckpt')
+
+#利用网格（10×10）的形式显示指定条件下生成的图像。
 z = torch.randn(100, 100).cuda()
 labels = torch.LongTensor([i for i in range(10) for _ in range(10)]).cuda()
 images = G(z, labels).unsqueeze(1)
@@ -142,6 +148,7 @@ ax.imshow(grid.permute(1, 2, 0).detach().cpu().numpy(), cmap = 'binary')
 ax.axis('off')
 plt.show()
 
+#可视化指定单个数字条件下生成的数字
 def generate_digit(generator, digit) :
     z = torch.randn(1, 100).cuda()
     label = torch.LongTensor([digit]).cuda()
@@ -149,4 +156,3 @@ def generate_digit(generator, digit) :
     img = 0.5 * img + 0.5
     return transforms.ToPILImage()(img)
 generate_digit(G, 8)
-

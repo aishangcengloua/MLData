@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import os
+import cv2 as cv
+import matplotlib.pyplot as plt
 import torchvision.transforms as transforms
 from torchvision import datasets
 from torch.utils.data import DataLoader
@@ -116,3 +118,20 @@ for epoch in range(MAX_EPOCH) :
     # 保存模型
     torch.save(G.state_dict(), 'G.ckpt')
     torch.save(D.state_dict(), 'D.ckpt')
+
+img1 = cv.imread('samples_GAN/fake_images-1.png')
+img2 = cv.imread('samples_GAN/fake_images-100.png')
+img3 = cv.imread('samples_GAN/fake_images-200.png')
+
+imgs = [img1, img2, img3]
+labels = ['Epoch : 1', 'Epoch : 100', 'Epoch : 200']
+
+plt.figure(figsize = (10, 10))
+for i in range(3) :
+    plt.subplot(1, 3, i + 1)
+    plt.imshow(imgs[i], 'gray')
+    plt.title(labels[i])
+    plt.axis('off')
+    plt.tight_layout()
+
+plt.show()
